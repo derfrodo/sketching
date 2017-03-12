@@ -5,7 +5,12 @@ var pathsData = {};
 
 var colorButton;
 
+var sliderHue;
+var sliderSat;
+var sliderBri;
+
 function setup() {
+    frameRate(5);
     var b = createButton('clear');
     b.mousePressed(() => {
         clearData();
@@ -14,13 +19,28 @@ function setup() {
     });
     colorButton = createButton('refreshColor');
     colorButton.mousePressed(() => {
-        refreshColor();
+        refreshColor(floor(random(0, 360),50,50));
         emitPathsData();
     }
     );
     createP('');
+    createCanvas(1024, 500);
+    createP('');
+     
+    b = createButton('go fullscreen');
+    b.mousePressed(goFullScreen);
 
-    createCanvas(1280, 720);
+    createP('Hue');
+    sliderHue = createSlider(0, 359, floor(random(0, 360)));
+    sliderHue.input(()=>refreshColor());
+
+    createP('Saturation');
+    sliderSat = createSlider(0, 100, 50);
+    sliderSat.input(()=>refreshColor());
+
+    createP('Brightness');
+    sliderBri = createSlider(0, 100, 50);
+    sliderBri.input(()=>refreshColor());
 
     socket = io.connect();
 
@@ -44,16 +64,30 @@ function setup() {
 
 }
 
+
+function goFullScreen() {
+    let cs = document.getElementsByTagName("CANVAS");
+    if (cs && cs.length === 1) {
+        const canvas = cs[0];
+        if (canvas.requestFullScreen)
+            canvas.requestFullScreen();
+        else if (canvas.webkitRequestFullScreen)
+            canvas.webkitRequestFullScreen();
+        else if (canvas.mozRequestFullScreen)
+            canvas.mozRequestFullScreen();
+    }
+}
+
 function clearData() {
     pathsData.currentPath = undefined;
     pathsData.paths = [];
 }
 
-function refreshColor() {
+function refreshColor(nextHue, nextSat, nextBri) {
     pathsData.pathColor = {
-        h: floor(random(0, 360)),
-        s: 100,
-        b: 50,
+        h: nextHue || sliderHue.value(),
+        s: nextSat || sliderSat.value(),
+        b: nextBri || sliderBri.value(),
     };
 }
 
