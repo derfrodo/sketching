@@ -1,113 +1,131 @@
 var socket;
-function setup() {
 
-    createP("Hallo Viewer!");
+var receivedClientsPathsData;
+var pathsData = {};
+
+var colorButton;
+
+function setup() {
+    var b = createButton('clear');
+    b.mousePressed(() => {
+        clearData();
+        emitPathsData();
+
+    });
+    colorButton = createButton('refreshColor');
+    colorButton.mousePressed(() => {
+        refreshColor();
+        emitPathsData();
+    }
+    );
+    createP('');
+
     createCanvas(1280, 720);
 
     socket = io.connect();
-    socket.on("new client", (data) => {
-        // console.log("new client");
-        // console.log(data);
+
+
+    refreshColor();
+    clearData();
+
+    socket.on("message", (data) => {
+        console.log(`Server meldet: ${data}`);
+    });
+
+    socket.on("paths data updated", clientsPathsData => {
+        // console.log(clientsPathsData);
+        receivedClientsPathsData = clientsPathsData;
     })
 
-    socket.on("paths updated", (data) => {
-        paths = data.paths;
-        // console.log(data);
-    })
+    socket.on("connected", () => {
+        console.log("Server meldet: connected");
+    });
+
+
 }
-var paths;
 
-var path = {
-    color: {
-        r: Math.floor(Math.random() * 256),
-        b: Math.floor(Math.random() * 256),
-        g: Math.floor(Math.random() * 256)
-    },
-    paths: [],
-    currentPath: undefined,
-};
+function clearData() {
+    pathsData.currentPath = undefined;
+    pathsData.paths = [];
+}
+
+function refreshColor() {
+    pathsData.pathColor = {
+        h: floor(random(0, 360)),
+        s: 100,
+        b: 50,
+    };
+}
 
 function mousePressed() {
-
-    if (path.currentPath) {
-        path.paths.push(path.currentPath);
-    }
-
-    path.currentPath = [];
-    path.currentPath.push({
-        x: mouseX,
-        y: mouseY
-    });
-    // console.log("send new path")
-    emitUpdatedPaths();
+    pathsData.currentPath = [{ x: mouseX, y: mouseY }];
+    pathsData.paths.push(pathsData.currentPath);
 }
 
 function mouseDragged() {
-    path.currentPath.push({
-        x: mouseX,
-        y: mouseY
-    });
-    emitUpdatedPaths();
-    // console.log("update path")
+    if (pathsData.currentPath) {
+        pathsData.currentPath.push({ x: mouseX, y: mouseY });
+    }
+    else {
+        mousePressed();
+    }
+    emitPathsData();
 }
 
-function emitUpdatedPaths() {
-    if (!updateHandle) {
-        updateHandle = setTimeout(() => {
-            socket.emit("update path", { path });
-            updateHandle = undefined;
+var timeoutHandle = undefined;
+
+function emitPathsData() {
+    if (!timeoutHandle) {
+        timeoutHandle = setTimeout(() => {
+            timeoutHandle = undefined;
+            socket.emit("client paths data updated", pathsData);
         }, 500);
     }
 }
 
-var updateHandle = undefined;
 
 function draw() {
+    pathColor = pathsData.pathColor;
+    colorMode(HSB);
+    let col = color(pathColor.h, pathColor.s, pathColor.b);
+    colorButton.style("background-color", col);
 
     background(255);
     noFill();
-    stroke(0);
     strokeWeight(1);
+    stroke(0);
     rect(0, 0, width - 1, height - 1);
 
-    if (paths) {
-        for (let cpDataId in paths) {
-            if (cpDataId !== socket.id) {
-                clientPathData = paths[cpDataId];
-                for (let p of clientPathData.clientPaths) {
-                    drawPath(p, clientPathData.color);
-                }
-
-                if (clientPathData.currentClientPath) {
-                    drawPath(clientPathData.currentClientPath, clientPathData.color);
-                }
-            }
+    for (let clientId in receivedClientsPathsData) {
+        if (clientId !== socket.id) {
+            var clientPaths = receivedClientsPathsData[clientId];
+            drawClientPaths(clientPaths);
         }
     }
-
-    if (path) {
-        for (let p of path.paths) {
-            drawPath(p, path.color);
-        }
-        if(path.currentPath){
-
-        drawPath(path.currentPath, { r: 255, g: 0, b: 255 });
-        }
-    }
-
+    drawClientPaths(pathsData);
 }
 
-function drawPath(path, cpColor) {
+function drawClientPaths(clientPathsData) {
+    for (let path of clientPathsData.paths) {
+        drawPath(path, clientPathsData.pathColor);
+    }
+}
+
+
+function drawPath(path, pathColor) {
     push();
-    let drawColor = color(cpColor.r, cpColor.g, cpColor.b);
+    noFill();
+
+    colorMode(HSB);
+    let col = color(pathColor.h, pathColor.s, pathColor.b);
 
     strokeWeight(4);
-    stroke(drawColor);
+    stroke(col);
+
     beginShape();
-    for (let i = 0; i < path.length; i++) {
-        vertex(path[i].x, path[i].y)
+    for (let point of path) {
+        vertex(point.x, point.y);
     }
     endShape();
-
     pop();
 }
