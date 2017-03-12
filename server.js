@@ -52,6 +52,8 @@ io.on('connection', function (client) {
     console.log(client.id);
     //io.sockets.emit('new client', client.id);
     client.broadcast.emit('new client', client.id);
+    
+    emitPaths(paths, client);
 
 });
 
