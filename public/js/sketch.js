@@ -107,7 +107,7 @@ function mouseDragged() {
 
 function smoothenPath(pathData) {
 
-    if (pathData.length > 100) {
+    if (pathData.length > 2) {
 
         let result = doDouglasPeucker(pathData, 1);
 

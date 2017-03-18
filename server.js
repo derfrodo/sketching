@@ -19,7 +19,7 @@ io.on("connection", (socket) => {
         clientsPathsData[socket.id] = pathsData;
 
         socket.broadcast.emit("paths data updated", clientsPathsData);
-        console.log(pathsData);
+        // console.log(pathsData);
     });
 
     socket.on("disconnect", data => {
