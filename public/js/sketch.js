@@ -163,7 +163,7 @@ function doDouglasPeucker(pathData, epsilon) {
     }
 
     if (dmax > epsilon) {
-        console.log(dmax)
+        // console.log(dmax)
         let firstArray = pathData.slice(0, index);
         let secondArray = pathData.slice(index);
 
