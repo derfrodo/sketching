@@ -88,6 +88,7 @@ function refreshColor(nextHue, nextSat, nextBri) {
 }
 
 function mousePressed() {
+    smoothenCurrentPath();
     pathsData.currentPath = [{ x: mouseX, y: mouseY }];
     pathsData.paths.push(pathsData.currentPath);
 }
@@ -96,13 +97,19 @@ function mouseDragged() {
     if (pathsData.currentPath) {
         let currentPath = pathsData.currentPath;
         currentPath.push({ x: mouseX, y: mouseY });
-        pathsData.currentPath = smoothenPath([].concat(currentPath));
-        pathsData.paths.splice(pathsData.paths.length-1, 1,pathsData.currentPath);
     }
     else {
         mousePressed();
     }
     emitPathsData();
+}
+
+function smoothenCurrentPath() {
+    if (pathsData.currentPath) {
+        let currentPath = pathsData.currentPath;
+        pathsData.currentPath = smoothenPath([].concat(currentPath));
+        pathsData.paths.splice(pathsData.paths.length - 1, 1, pathsData.currentPath);
+    }
 }
 
 function smoothenPath(pathData) {
@@ -113,12 +120,12 @@ function smoothenPath(pathData) {
 
         // console.log(pathData);
         // console.log(result);
-         console.log("PathsLength:" + pathData.length  + ", Result: " + result.length);
+        console.log("PathsLength:" + pathData.length + ", Result: " + result.length);
         // noLoop();
 
         return result;
     }
-    else{
+    else {
         return pathData;
     }
 
@@ -174,9 +181,10 @@ var timeoutHandle = undefined;
 function emitPathsData() {
     if (!timeoutHandle) {
         timeoutHandle = setTimeout(() => {
+            smoothenCurrentPath();    
             timeoutHandle = undefined;
             socket.emit("client paths data updated", pathsData);
-        }, 500);
+        }, 750);
     }
 }
 
