@@ -41,5 +41,7 @@ app.use("/lib", express.static('node_modules/p5/lib/addons'));
 app.use("/lib", express.static('node_modules/socket.io-client/dist'));
 
 http.listen(process.env.PORT || 3000, "0.0.0.0", () => {
-    console.log("Http-Server is listening on port 3000. Visit it at http://localhost:3000 ");
+
+    let port = process.env.PORT || 3000;
+    console.log("Http-Server is listening on port "+port+". Visit it at http://localhost:"+port+" ");
 })
