@@ -11,6 +11,9 @@ var sliderBri;
 
 function setup() {
     frameRate(5);
+    createCanvas(1024, 500);
+    createP('');
+
     var b = createButton('clear');
     b.mousePressed(() => {
         clearData();
@@ -23,12 +26,10 @@ function setup() {
         emitPathsData();
     }
     );
-    createP('');
-    createCanvas(1024, 500);
-    createP('');
 
     b = createButton('go fullscreen');
     b.mousePressed(goFullScreen);
+    
 
     createP('Hue');
     sliderHue = createSlider(0, 359, floor(random(0, 360)));
