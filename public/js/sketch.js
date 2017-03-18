@@ -181,7 +181,7 @@ var timeoutHandle = undefined;
 function emitPathsData() {
     if (!timeoutHandle) {
         timeoutHandle = setTimeout(() => {
-            smoothenCurrentPath();    
+            smoothenCurrentPath();
             timeoutHandle = undefined;
             socket.emit("client paths data updated", pathsData);
         }, 750);
@@ -211,7 +211,15 @@ function draw() {
 
 function drawClientPaths(clientPathsData) {
     for (let path of clientPathsData.paths) {
-        drawPath(path, clientPathsData.pathColor);
+        if (path.length > 1) {
+            drawPath(path, clientPathsData.pathColor);
+        }
+        else if (path.length === 1) {
+            push();
+            fill(clientPathsData.pathColor);
+            ellipse(path[0].x, path[0].y, 4, 4)
+            pop();
+        }
     }
 }
 
