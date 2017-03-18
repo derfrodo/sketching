@@ -29,7 +29,7 @@ function setup() {
 
     b = createButton('go fullscreen');
     b.mousePressed(goFullScreen);
-    
+
 
     createP('Hue');
     sliderHue = createSlider(0, 359, floor(random(0, 360)));
@@ -92,6 +92,7 @@ function mousePressed() {
     smoothenCurrentPath();
     pathsData.currentPath = [{ x: mouseX, y: mouseY }];
     pathsData.paths.push(pathsData.currentPath);
+    emitPathsData();
 }
 
 function mouseDragged() {
@@ -221,6 +222,7 @@ function drawClientPaths(clientPathsData) {
             let pathColor = clientPathsData.pathColor;
             let col = color(pathColor.h, pathColor.s, pathColor.b);
             fill(col);
+            noStroke();
             ellipse(path[0].x, path[0].y, 4, 4)
             pop();
         }
