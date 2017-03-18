@@ -19,31 +19,30 @@ function setup() {
     });
     colorButton = createButton('refreshColor');
     colorButton.mousePressed(() => {
-        refreshColor(floor(random(0, 360),50,50));
+        refreshColor(floor(random(0, 360), 50, 50));
         emitPathsData();
     }
     );
     createP('');
     createCanvas(1024, 500);
     createP('');
-     
+
     b = createButton('go fullscreen');
     b.mousePressed(goFullScreen);
 
     createP('Hue');
     sliderHue = createSlider(0, 359, floor(random(0, 360)));
-    sliderHue.input(()=>refreshColor());
+    sliderHue.input(() => refreshColor());
 
     createP('Saturation');
     sliderSat = createSlider(0, 100, 50);
-    sliderSat.input(()=>refreshColor());
+    sliderSat.input(() => refreshColor());
 
     createP('Brightness');
     sliderBri = createSlider(0, 100, 50);
-    sliderBri.input(()=>refreshColor());
+    sliderBri.input(() => refreshColor());
 
     socket = io.connect();
-
 
     refreshColor();
     clearData();
@@ -60,10 +59,7 @@ function setup() {
     socket.on("connected", () => {
         console.log("Server meldet: connected");
     });
-
-
 }
-
 
 function goFullScreen() {
     let cs = document.getElementsByTagName("CANVAS");
@@ -98,12 +94,79 @@ function mousePressed() {
 
 function mouseDragged() {
     if (pathsData.currentPath) {
-        pathsData.currentPath.push({ x: mouseX, y: mouseY });
+        let currentPath = pathsData.currentPath;
+        currentPath.push({ x: mouseX, y: mouseY });
+        pathsData.currentPath = smoothenPath([].concat(currentPath));
+        pathsData.paths.splice(pathsData.paths.length-1, 1,pathsData.currentPath);
     }
     else {
         mousePressed();
     }
     emitPathsData();
+}
+
+function smoothenPath(pathData) {
+
+    if (pathData.length > 100) {
+
+        let result = doDouglasPeucker(pathData, 1);
+
+        // console.log(pathData);
+        // console.log(result);
+         console.log("PathsLength:" + pathData.length  + ", Result: " + result.length);
+        // noLoop();
+
+        return result;
+    }
+    else{
+        return pathData;
+    }
+
+}
+
+/** Siehe auch: https://de.wikipedia.org/wiki/Douglas-Peucker-Algorithmus */
+function doDouglasPeucker(pathData, epsilon) {
+    epsilon = epsilon || .5;
+    let dmax = 0;
+    let index = 0;
+
+    // p1-------pe
+    //      |
+    //      | -> d !< epsilon
+    //      p
+
+    let end = pathData.length - 1;
+
+    let u = {
+        x: pathData[end].x - pathData[0].x,
+        y: pathData[end].y - pathData[0].y
+    };
+
+    let lenU = dist(pathData[0].x, pathData[0].y, pathData[end].x, pathData[end].y);
+
+    u.x /= lenU;
+    u.y /= lenU;
+
+    for (let i = 1; i < end; i++) {
+        d = abs((pathData[i].x - pathData[0].x) * u.y - (pathData[i].y - pathData[0].y) * u.x);
+        if (d > dmax) {
+            dmax = d;
+            index = i;
+        }
+    }
+
+    if (dmax > epsilon) {
+        console.log(dmax)
+        let firstArray = pathData.slice(0, index);
+        let secondArray = pathData.slice(index);
+
+        let consultedFirstArray = doDouglasPeucker(firstArray, epsilon);
+        let consultedSecondArray = doDouglasPeucker(secondArray, epsilon);
+        return consultedFirstArray.concat(consultedSecondArray.slice(0, consultedSecondArray.length));
+    }
+    else {
+        return [pathData[0], pathData[end]];
+    }
 }
 
 var timeoutHandle = undefined;
@@ -116,7 +179,6 @@ function emitPathsData() {
         }, 500);
     }
 }
-
 
 function draw() {
     pathColor = pathsData.pathColor;
