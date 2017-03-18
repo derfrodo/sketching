@@ -35,11 +35,11 @@ io.on("connection", (socket) => {
     
 });
 
-app.use(express.static('www'));
+app.use(express.static('public'));
 app.use("/lib", express.static('node_modules/p5/lib'));
 app.use("/lib", express.static('node_modules/p5/lib/addons'));
 app.use("/lib", express.static('node_modules/socket.io-client/dist'));
 
-http.listen(3000, "0.0.0.0", () => {
+http.listen(process.env.PORT || 3000, "0.0.0.0", () => {
     console.log("Http-Server is listening on port 3000. Visit it at http://localhost:3000 ");
 })
