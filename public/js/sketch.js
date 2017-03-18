@@ -216,7 +216,10 @@ function drawClientPaths(clientPathsData) {
         }
         else if (path.length === 1) {
             push();
-            fill(clientPathsData.pathColor);
+            colorMode(HSB);
+            let pathColor = clientPathsData.pathColor;
+            let col = color(pathColor.h, pathColor.s, pathColor.b);
+            fill(pathColor);
             ellipse(path[0].x, path[0].y, 4, 4)
             pop();
         }
