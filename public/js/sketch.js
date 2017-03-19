@@ -11,8 +11,12 @@ var sliderBri;
 
 function setup() {
     frameRate(5);
-    createCanvas(1024, 500);
-    createP('');
+    
+    c = createCanvas(1024, 500);
+    c.parent('sketch-holder');
+
+    let nlp = createP('');
+    nlp.parent('sketch-holder');
 
     var b = createButton('clear');
     b.mousePressed(() => {
@@ -20,16 +24,19 @@ function setup() {
         emitPathsData();
 
     });
+    b.parent('sketch-holder');
+
+
     colorButton = createButton('refreshColor');
     colorButton.mousePressed(() => {
         refreshColor(floor(random(0, 360), 50, 50));
         emitPathsData();
     }
     );
+    colorButton.parent('sketch-holder');
 
-    b = createButton('go fullscreen');
-    b.mousePressed(goFullScreen);
-
+    let fullscreenButton = createFullscreenButtonForDomElement(document.getElementById('sketch-holder'));
+    fullscreenButton.parent('sketch-holder');
 
     createP('Hue');
     sliderHue = createSlider(0, 359, floor(random(0, 360)));
@@ -122,7 +129,7 @@ function smoothenPath(pathData) {
 
         // console.log(pathData);
         // console.log(result);
-        console.log("PathsLength:" + pathData.length + ", Result: " + result.length);
+        // console.log("PathsLength:" + pathData.length + ", Result: " + result.length);
         // noLoop();
 
         return result;
