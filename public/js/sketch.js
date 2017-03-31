@@ -9,13 +9,17 @@ var sliderHue;
 var sliderSat;
 var sliderBri;
 
+var participients;
+
 function setup() {
     frameRate(5);
-    
-    c = createCanvas(1024, 500);
+    noSmooth();
+
+    c = createCanvas(1280, 720);
     c.parent('sketch-holder');
 
-    let nlp = createP('');
+
+    let nlp = createP(''); 
     nlp.parent('sketch-holder');
 
     var b = createButton('clear');
@@ -38,6 +42,7 @@ function setup() {
     let fullscreenButton = createFullscreenButtonForDomElement(document.getElementById('sketch-holder'));
     fullscreenButton.parent('sketch-holder');
 
+
     createP('Hue');
     sliderHue = createSlider(0, 359, floor(random(0, 360)));
     sliderHue.input(() => refreshColor());
@@ -49,6 +54,8 @@ function setup() {
     createP('Brightness');
     sliderBri = createSlider(0, 100, 50);
     sliderBri.input(() => refreshColor());
+
+    participients = createP('adad');
 
     socket = io.connect();
 
@@ -209,12 +216,18 @@ function draw() {
     stroke(0);
     rect(0, 0, width - 1, height - 1);
 
+    let participientsText = "";
+        participientsText += "Me: " + socket.id + " <br />";
     for (let clientId in receivedClientsPathsData) {
         if (clientId !== socket.id) {
+        participientsText += clientId + " <br />";
             var clientPaths = receivedClientsPathsData[clientId];
             drawClientPaths(clientPaths);
         }
     }
+
+    participients.html(participientsText);
+
     drawClientPaths(pathsData);
 }
 
